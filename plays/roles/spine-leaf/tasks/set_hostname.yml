@@ -1,0 +1,11 @@
+---
+
+- name: Setting hostname
+  become: true
+  ansible.builtin.hostname:
+    name: "{{ switch_name }}.{{ domain }}"
+  notify: SaveConfig
+  register: output
+- name: Debug
+  ansible.builtin.debug:
+    var: output

@@ -1,0 +1,7 @@
+---
+# handlers file for spine-leaf
+
+- name: SaveConfig
+  become: true
+  ansible.builtin.command:
+    nv config apply -y

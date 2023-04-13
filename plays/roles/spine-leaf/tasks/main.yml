@@ -1,0 +1,5 @@
+---
+# tasks file for spine-leaf
+
+- name: Setting Hostname
+  ansible.builtin.import_tasks: set_hostname.yml
