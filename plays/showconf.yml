@@ -1,0 +1,14 @@
+---
+- name: Testing
+  hosts: cumulus
+  gather_facts: false
+
+  tasks:
+    - name: Showing configuration as commands
+      become: true
+      ansible.builtin.shell: nv config show -o commands
+      register: output
+      changed_when: false
+    - name:
+      ansible.builtin.debug:
+        var: output

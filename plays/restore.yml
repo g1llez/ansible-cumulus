@@ -1,6 +1,7 @@
 ---
-- name: Restoring config on all cumulus switches
+- name: Testing
   hosts: cumulus
+  gather_facts: false
 
   handlers:
     - name: SaveConfig
@@ -13,8 +14,12 @@
       become: true
       ansible.builtin.shell: "{{ item }}"
       with_items:
-        - nv unset system hostname
-        - nv unset service ntp
-        - nv unset router bgp
-        - nv unset interface lo ip address
+        - nv unset system
+        - nv unset service
+        - nv unset router
+        - nv unset vrf
+        - nv unset evpn
+        - nv unset nve
+        - nv unset interface lo
+        - nv unset interface swp1-6
       notify: SaveConfig

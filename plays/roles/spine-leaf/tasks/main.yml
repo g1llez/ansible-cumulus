@@ -23,11 +23,44 @@
   ansible.builtin.include_tasks: set_nv_command.yml
 
 #
-# Setting BGP
+# Setting BGP for spines
 #
-- name: Setting loopback
+- name: Setting BGP for spines
   ansible.builtin.include_tasks: set_nv_commands.yml
+  when: "'spine' in group_names"
   vars:
     cmd:
+      - nv set interface swp1-2
       - nv set router bgp autonomous-system {{ asn }}
       - nv set router bgp router-id {{ loopback }}
+      - nv set vrf default router bgp peer-group underlay remote-as external
+      - nv set vrf default router bgp timers keepalive 1
+      - nv set vrf default router bgp timers hold 3
+      - nv set vrf default router bgp timers connection-retry 3
+      - nv set vrf default router bgp neighbor swp1 remote-as external
+      - nv set vrf default router bgp neighbor swp2 remote-as external
+      - nv set vrf default router bgp address-family ipv4-unicast redistribute connected
+      - nv set vrf default router bgp neighbor swp1 address-family l2vpn-evpn enable on
+      - nv set vrf default router bgp neighbor swp2 address-family l2vpn-evpn enable on
+
+#
+# Setting BGP for leafs
+#
+- name: Setting BGP for leafs
+  ansible.builtin.include_tasks: set_nv_commands.yml
+  when: "'leaf' in group_names"
+  vars:
+    cmd:
+      - nv set interface swp1-2
+      - nv set router bgp autonomous-system {{ asn }}
+      - nv set router bgp router-id {{ loopback }}
+      - nv set vrf default router bgp timers keepalive 1
+      - nv set vrf default router bgp timers hold 3
+      - nv set vrf default router bgp timers connection-retry 3
+      - nv set vrf default router bgp neighbor swp1 remote-as external
+      - nv set vrf default router bgp neighbor swp2 remote-as external
+      - nv set vrf default router bgp address-family ipv4-unicast network {{ loopback }}/32
+      - nv set vrf default router bgp address-family ipv4-unicast redistribute connected
+      - nv set evpn enable on
+      - nv set vrf default router bgp neighbor swp1 address-family l2vpn-evpn enable on
+      - nv set vrf default router bgp neighbor swp2 address-family l2vpn-evpn enable on

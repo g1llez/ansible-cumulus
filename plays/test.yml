@@ -1,0 +1,10 @@
+---
+- name: Testing
+  hosts: cumulus
+  gather_facts: false
+
+  tasks:
+    - name: Testing a command
+      ansible.builtin.debug:
+        msg: "It's a leaf! : {{ hostname }}"
+      when: "'leaf' in group_names"
