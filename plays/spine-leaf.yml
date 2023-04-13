@@ -1,0 +1,6 @@
+---
+
+- hosts: cumulus
+  gather_facts: false
+  roles:
+    - spine-leaf

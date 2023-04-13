@@ -2,4 +2,32 @@
 # tasks file for spine-leaf
 
 - name: Setting Hostname
-  ansible.builtin.import_tasks: set_hostname.yml
+  vars:
+    nvue_command: nv set system hostname {{ hostname }}
+  ansible.builtin.include_tasks: set_nv_command.yml
+  register: output
+
+- name: Setting NTPs servers 1
+  vars:
+    nvue_command: nv set service ntp default server {{ ntp_server_1 }} iburst on
+  ansible.builtin.include_tasks: set_nv_command.yml
+
+- name: Setting NTPs servers 2
+  vars:
+    nvue_command: nv set service ntp default server {{ ntp_server_2 }} iburst on
+  ansible.builtin.include_tasks: set_nv_command.yml
+
+- name: Setting loopback
+  vars:
+    nvue_command: nv set interface lo ip address {{ loopback }}/32
+  ansible.builtin.include_tasks: set_nv_command.yml
+
+#
+# Setting BGP
+#
+- name: Setting loopback
+  ansible.builtin.include_tasks: set_nv_commands.yml
+  vars:
+    cmd:
+      - nv set router bgp autonomous-system {{ asn }}
+      - nv set router bgp router-id {{ loopback }}

@@ -1,0 +1,11 @@
+---
+
+- name: Setting NTPs servers 1
+  vars:
+    nvue_command: nv set service ntp default server {{ ntp_server_1 }} iburst on
+  ansible.builtin.import_tasks: set_nv_command.yml
+
+- name: Setting NTPs servers 2
+  vars:
+    nvue_command: nv set service ntp default server {{ ntp_server_2 }} iburst on
+  ansible.builtin.import_tasks: set_nv_command.yml

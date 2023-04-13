@@ -1,0 +1,28 @@
+---
+
+- name: Checking if the config exist
+  become: true
+  ansible.builtin.shell: |
+    nv config show -o commands | grep '{{ item }}' | wc -l
+  with_items: "{{ cmd }}"
+  register: cmd_exist
+  vars:
+    cmde: cmd
+  changed_when: false
+#- name: Debug
+#  ansible.builtin.debug:
+#    var: cmd_exist
+
+- name: Applying command
+  become: true
+  ansible.builtin.shell: "{{ item.item }}"
+  when: item.stdout != "1"
+  with_items:
+    - "{{ cmd_exist.results }}"
+  notify: SaveConfig
+
+#- name: Debug
+#  ansible.builtin.debug:
+#    msg: "Msg: {{ item.item }} "
+#  with_items:
+#    - "{{ cmd_exist.results }}"

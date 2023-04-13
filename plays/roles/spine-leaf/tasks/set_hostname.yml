@@ -1,11 +1,10 @@
 ---
 
-- name: Setting hostname
-  become: true
-  ansible.builtin.hostname:
-    name: "{{ switch_name }}.{{ domain }}"
-  notify: SaveConfig
+- name: Setting Hostname
+  vars:
+    nvue_command: nv set system hostname {{ hostname }}
+  ansible.builtin.import_tasks: set_nv_command.yml
   register: output
-- name: Debug
-  ansible.builtin.debug:
-    var: output
+#- name: Debug
+#  ansible.builtin.debug:
+#    var: output
