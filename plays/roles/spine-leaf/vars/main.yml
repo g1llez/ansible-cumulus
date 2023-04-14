@@ -1,8 +1,7 @@
 ---
 # vars file for spine-leaf
 
-#
-# NTP Server
-#
-ntp_server_1: 172.10.0.1
-ntp_server_2: 172.10.0.2
+asn_spine_id: 1
+loopback_prefix: 172.16
+asn_prefix: 65
+mlag_mac_prefix: 44:38:39:FF

@@ -1,6 +1,28 @@
 ---
 # tasks file for spine-leaf
 
+# Include vars for the current site
+- name: Include vars for the current switch
+  ansible.builtin.include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "site_{{ site }}.yml"
+        - "site_default.yml"
+
+- name: Setting facts for Spine
+  set_fact:
+    hostname: "SP-{{ site }}{{ node_id }}"
+    loopback: "{{ loopback_prefix }}.{{ site_id }}.{{ node_id }}"
+    asn: '{{ asn_prefix }}{{ site_id }}{{ "%02d" | format(asn_spine_id) }}'
+  when: "'spine' in group_names"
+
+- name: Setting facts for Leafs
+  set_fact:
+    hostname: "LE-{{ site }}{{ node_id }}"
+    loopback: "{{ loopback_prefix }}.{{ site_id }}.{{ node_id+20 }}"
+    asn: '{{ asn_prefix }}{{ site_id }}{{ "%02d" | format(node_id + 20) }}'
+  when: "'leaf' in group_names"
+
 - name: Setting Hostname
   vars:
     nvue_command: nv set system hostname {{ hostname }}
@@ -16,12 +38,6 @@
   vars:
     nvue_command: nv set service ntp default server {{ ntp_server_2 }} iburst on
   ansible.builtin.include_tasks: set_nv_command.yml
-
-- name: Setting loopback
-  vars:
-    nvue_command: nv set interface lo ip address {{ loopback }}/32
-  ansible.builtin.include_tasks: set_nv_command.yml
-
 #
 # Setting BGP for spines
 #
@@ -30,6 +46,7 @@
   when: "'spine' in group_names"
   vars:
     cmd:
+      - nv set interface lo ip address {{ loopback }}/32
       - nv set interface swp1-2
       - nv set router bgp autonomous-system {{ asn }}
       - nv set router bgp router-id {{ loopback }}
@@ -39,9 +56,12 @@
       - nv set vrf default router bgp timers connection-retry 3
       - nv set vrf default router bgp neighbor swp1 remote-as external
       - nv set vrf default router bgp neighbor swp2 remote-as external
-      - nv set vrf default router bgp address-family ipv4-unicast redistribute connected
-      - nv set vrf default router bgp neighbor swp1 address-family l2vpn-evpn enable on
-      - nv set vrf default router bgp neighbor swp2 address-family l2vpn-evpn enable on
+      - nv set vrf default router bgp address-family ipv4-unicast
+        redistribute connected
+      - nv set vrf default router bgp neighbor swp1 address-family l2vpn-evpn
+        enable on
+      - nv set vrf default router bgp neighbor swp2 address-family l2vpn-evpn
+        enable on
 
 #
 # Setting BGP for leafs
@@ -51,7 +71,8 @@
   when: "'leaf' in group_names"
   vars:
     cmd:
-      - nv set interface swp1-2
+      - nv set interface lo ip address {{ loopback }}/32
+      - nv set interface swp1-2,6 type swp
       - nv set router bgp autonomous-system {{ asn }}
       - nv set router bgp router-id {{ loopback }}
       - nv set vrf default router bgp timers keepalive 1
@@ -59,8 +80,36 @@
       - nv set vrf default router bgp timers connection-retry 3
       - nv set vrf default router bgp neighbor swp1 remote-as external
       - nv set vrf default router bgp neighbor swp2 remote-as external
-      - nv set vrf default router bgp address-family ipv4-unicast network {{ loopback }}/32
-      - nv set vrf default router bgp address-family ipv4-unicast redistribute connected
+      - nv set vrf default router bgp address-family ipv4-unicast network
+        {{ loopback }}/32
+      - nv set vrf default router bgp address-family ipv4-unicast redistribute
+        connected
       - nv set evpn enable on
-      - nv set vrf default router bgp neighbor swp1 address-family l2vpn-evpn enable on
-      - nv set vrf default router bgp neighbor swp2 address-family l2vpn-evpn enable on
+      - nv set vrf default router bgp neighbor swp1 address-family l2vpn-evpn
+        enable on
+      - nv set vrf default router bgp neighbor swp2 address-family l2vpn-evpn
+        enable on
+
+#
+# Setting vLANs on the Leafs
+#
+- name: Setting vLANs for the Leafs
+  ansible.builtin.include_tasks: set_nv_commands.yml
+  when: "'leaf' in group_names"
+  vars:
+    cmd:
+      - nv set interface vlan100 vlan 100
+      - nv set interface vlan200 vlan 200
+      - nv set bridge domain br_default vlan 100 vni 100
+      - nv set bridge domain br_default vlan 200 vni 200
+      - nv set interface swp6 bridge domain br_default vlan all
+
+#
+# Setting Access ports on the Leafs
+#
+#- name: Setting Access Ports for the Leafs
+#  ansible.builtin.include_tasks: set_nv_commands.yml
+#  when: "'leaf' in group_names"
+#  vars:
+#    cmd:
+#      - nv set interface swp5-6 bridge domain br_default access 100
