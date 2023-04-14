@@ -11,14 +11,14 @@
 
 - name: Setting facts for Spine
   set_fact:
-    hostname: "SP-{{ site }}{{ node_id }}"
+    hostname: 'SP-{{ site }}{{ "%02d" | format(node_id) }}'
     loopback: "{{ loopback_prefix }}.{{ site_id }}.{{ node_id }}"
     asn: '{{ asn_prefix }}{{ site_id }}{{ "%02d" | format(asn_spine_id) }}'
   when: "'spine' in group_names"
 
 - name: Setting facts for Leafs
   set_fact:
-    hostname: "LE-{{ site }}{{ node_id }}"
+    hostname: 'SP-{{ site }}{{ "%02d" | format(node_id) }}'
     loopback: "{{ loopback_prefix }}.{{ site_id }}.{{ node_id+20 }}"
     asn: '{{ asn_prefix }}{{ site_id }}{{ "%02d" | format(node_id + 20) }}'
   when: "'leaf' in group_names"
@@ -29,15 +29,14 @@
   ansible.builtin.include_tasks: set_nv_command.yml
   register: output
 
-- name: Setting NTPs servers 1
+- name: Setting NTPs servers
+  ansible.builtin.include_tasks: set_nv_commands.yml
+  when: "'spine' in group_names"
   vars:
-    nvue_command: nv set service ntp default server {{ ntp_server_1 }} iburst on
-  ansible.builtin.include_tasks: set_nv_command.yml
+    cmd:
+      - nv set service ntp default server {{ ntp_server_1 }} iburst on
+      - nv set service ntp default server {{ ntp_server_2 }} iburst on
 
-- name: Setting NTPs servers 2
-  vars:
-    nvue_command: nv set service ntp default server {{ ntp_server_2 }} iburst on
-  ansible.builtin.include_tasks: set_nv_command.yml
 #
 # Setting BGP for spines
 #
