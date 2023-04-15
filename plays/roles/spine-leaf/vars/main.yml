@@ -5,3 +5,4 @@ asn_spine_id: 1
 loopback_prefix: 172.16
 asn_prefix: 65
 mlag_mac_prefix: 44:38:39:FF
+spine_swp_start: 1

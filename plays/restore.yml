@@ -22,6 +22,11 @@
         - nv unset nve
         - nv unset interface lo
         - nv unset interface swp1-6
-        - nv unset bridge domain br_default
+        - nv unset bridge
         - nv unset interface vlan1-4094
+        - nv unset interface bond1
+        - nv unset interface bond2
+        - nv unset mlag
+        - nv unset interface peerlink
+        - nv unset interface peerlink.4094
       notify: SaveConfig

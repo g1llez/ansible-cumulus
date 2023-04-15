@@ -1,6 +1,6 @@
 ---
 
-- name: Checking if the config exist
+- name: Checking if the configs exist
   become: true
   ansible.builtin.shell: |
     nv config show -o commands | grep '{{ item }}' | wc -l
@@ -13,7 +13,7 @@
 #  ansible.builtin.debug:
 #    var: cmd_exist
 
-- name: Applying command
+- name: Applying commands
   become: true
   ansible.builtin.shell: "{{ item.item }}"
   when: item.stdout != "1"
