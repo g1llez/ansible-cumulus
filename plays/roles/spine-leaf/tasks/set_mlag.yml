@@ -1,0 +1,23 @@
+---
+
+#
+# Setting mLAG
+#
+- name: Setting mLag
+  ansible.builtin.include_tasks: set_nv_commands.yml
+  vars:
+    cmd:
+      - nv set interface bond1 bond member swp5
+      - nv set interface bond1 bond mlag id 1
+      - nv set interface bond1-2 bridge domain br_default
+      - nv set interface bond2 bond member swp6
+      - nv set interface bond2 bond mlag id 2
+      - nv set interface peerlink bond member swp3
+      - nv set interface peerlink bond member swp4
+      - nv set mlag mac-address {{ mlag_mac }}
+      - nv set mlag backup {{ mlag_ip_backup }}
+      - nv set mlag peer-ip linklocal
+      - nv set nve vxlan mlag shared-address {{ mlag_shared_ip }}
+      - nv set vrf default router bgp neighbor peerlink.4094 remote-as external
+      - nv set vrf default router bgp neighbor peerlink.4094
+        address-family l2vpn-evpn enable on

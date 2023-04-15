@@ -1,0 +1,37 @@
+---
+
+#
+# Setting BGP for Spines
+#
+
+- name: Setting BGP for spines
+  ansible.builtin.include_tasks: set_nv_commands.yml
+  vars:
+    cmd:
+      - nv set interface lo ip address {{ loopback }}/32
+      - nv set interface swp{{ spine_swp_start }}-{{ groups['leaf'] | length }}
+      - nv set router bgp autonomous-system {{ asn }}
+      - nv set router bgp router-id {{ loopback }}
+      - nv set vrf default router bgp peer-group underlay remote-as external
+      - nv set vrf default router bgp timers keepalive 1
+      - nv set vrf default router bgp timers hold 3
+      - nv set vrf default router bgp timers connection-retry 3
+      - nv set vrf default router bgp address-family ipv4-unicast
+        redistribute connected
+
+#
+# Setting Spines ports for Leafs
+#
+- name: Setting Spines ports for Leafs
+  ansible.builtin.include_tasks: set_nv_commands.yml
+  vars:
+    swp_number: "{{ swp_item }}"
+    cmd:
+      - nv set vrf default router bgp neighbor swp{{ swp_number }}
+        remote-as external
+      - nv set vrf default router bgp neighbor swp{{ swp_number }}
+        address-family l2vpn-evpn
+        enable on
+  with_sequence: start={{ spine_swp_start }} count={{ groups['leaf'] | length }}
+  loop_control:
+    loop_var: swp_item

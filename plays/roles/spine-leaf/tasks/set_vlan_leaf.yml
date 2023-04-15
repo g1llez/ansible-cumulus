@@ -1,0 +1,18 @@
+---
+
+#
+# Setting the vLANs on the Leafs
+#
+- name: Setting vLANs for the Leafs
+  ansible.builtin.include_tasks: set_nv_commands.yml
+  vars:
+    vlan: "{{ vlan_item }}"
+    cmd:
+      - nv set interface vlan{{ vlan_item.id }} vlan {{ vlan_item.id }}
+      - nv set bridge domain br_default vlan {{ vlan_item.id }}
+        vni {{ site_id * 10000 + vlan_item.id }}
+      - nv set interface vlan{{ vlan_item.id }}
+        description {{ vlan_item.name }}
+  loop: "{{ vlans_list }}"
+  loop_control:
+    loop_var: vlan_item

@@ -1,8 +1,40 @@
 ---
 # vars file for spine-leaf
 
-asn_spine_id: 1
 loopback_prefix: 172.16
+
+#
+# BGP ASN parameters
+#
+
+# Prefix for the ASN (eg. 65xxx)
 asn_prefix: 65
+
+# Id to use in the ASN auto-generated number
+asn_spine_id: 1
+
+#
+# mLAG parameters
+#
+
+# MAC prefix for the mLAG
 mlag_mac_prefix: 44:38:39:FF
+mlag_prefix: 172.17
+
+#
+# Spine parameters
+#
+
+# Switchport number start for the connection to the Leafs.
 spine_swp_start: 1
+
+#
+# vLAN parameters
+#
+vlans_list:
+  - name: vUser
+    id: 100
+  - name: vVoIP
+    id: 200
+  - name: Security
+    id: 300

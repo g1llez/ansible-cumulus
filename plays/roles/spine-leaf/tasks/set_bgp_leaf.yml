@@ -1,0 +1,27 @@
+---
+
+#
+# Setting BGP for the Leafs
+#
+- name: Setting BGP for Leafs
+  ansible.builtin.include_tasks: set_nv_commands.yml
+  vars:
+    cmd:
+      - nv set interface lo ip address {{ loopback }}/32
+      - nv set interface swp1-4 type swp
+      - nv set router bgp autonomous-system {{ asn }}
+      - nv set router bgp router-id {{ loopback }}
+      - nv set vrf default router bgp timers keepalive 1
+      - nv set vrf default router bgp timers hold 3
+      - nv set vrf default router bgp timers connection-retry 3
+      - nv set vrf default router bgp neighbor swp1 remote-as external
+      - nv set vrf default router bgp neighbor swp2 remote-as external
+      - nv set vrf default router bgp address-family ipv4-unicast network
+        {{ loopback }}/32
+      - nv set vrf default router bgp address-family ipv4-unicast redistribute
+        connected
+      - nv set evpn enable on
+      - nv set vrf default router bgp neighbor swp1 address-family l2vpn-evpn
+        enable on
+      - nv set vrf default router bgp neighbor swp2 address-family l2vpn-evpn
+        enable on

@@ -1,7 +1,9 @@
 ---
 # tasks file for spine-leaf
 
+#
 # Include vars for the current site
+#
 - name: Include vars for the current switch
   ansible.builtin.include_vars: "{{ item }}"
   with_first_found:
@@ -9,6 +11,9 @@
         - "site_{{ site }}.yml"
         - "site_default.yml"
 
+#
+# Setting facts for Spines and Leafs
+#
 - name: Setting facts for Spine
   set_fact:
     hostname: 'SP-{{ site }}{{ "%02d" | format(node_id) }}'
@@ -19,128 +24,52 @@
 - name: Setting facts for Leafs
   set_fact:
     hostname: 'LE-{{ site }}{{ "%02d" | format(node_id) }}'
-    loopback: "{{ loopback_prefix }}.{{ site_id }}.{{ node_id+20 }}"
+    loopback: "{{ loopback_prefix }}.{{ site_id }}.{{ node_id + 20 }}"
     asn: '{{ asn_prefix }}{{ site_id }}{{ "%02d" | format(node_id + 20) }}'
     mlag_mac: '{{ mlag_mac_prefix }}:{{ "%02d" | format(site_id) }}:{{ "%02d" |
       format(mlag_shared_id) }}'
     mlag_ip_backup:
-      '{{ loopback_prefix }}.{{ site_id }}.{{ mlag_pair_id+  20 }}'
+      '{{ loopback_prefix }}.{{ site_id }}.{{ mlag_pair_id + 20 }}'
+    mlag_shared_ip:
+      '{{ mlag_prefix }}.{{ site_id }}.{{ mlag_pair_id + 20 }}'
   when: "'leaf' in group_names"
 
+#
+# Setting global configuration
+#
 - name: Setting Hostname
-  vars:
-    nvue_command: nv set system hostname {{ hostname }}
-  ansible.builtin.include_tasks: set_nv_command.yml
+  ansible.builtin.include_tasks: set_global_conf.yml
   register: output
-
-- name: Setting NTPs servers
-  ansible.builtin.include_tasks: set_nv_commands.yml
-  vars:
-    cmd:
-      - nv set service ntp default server {{ ntp_server_1 }} iburst on
-      - nv set service ntp default server {{ ntp_server_2 }} iburst on
 
 #
 # Setting BGP for spines
 #
-- name: Setting BGP for spines
-  ansible.builtin.include_tasks: set_nv_commands.yml
+- name: Setting BGP for Spines
+  ansible.builtin.include_tasks: set_bgp_spine.yml
   when: "'spine' in group_names"
-  vars:
-    cmd:
-      - nv set interface lo ip address {{ loopback }}/32
-      - nv set interface swp{{ spine_swp_start }}-{{ groups['leaf'] | length }}
-      - nv set router bgp autonomous-system {{ asn }}
-      - nv set router bgp router-id {{ loopback }}
-      - nv set vrf default router bgp peer-group underlay remote-as external
-      - nv set vrf default router bgp timers keepalive 1
-      - nv set vrf default router bgp timers hold 3
-      - nv set vrf default router bgp timers connection-retry 3
-      - nv set vrf default router bgp address-family ipv4-unicast
-        redistribute connected
-      - nv set vrf default router bgp neighbor swp2 address-family l2vpn-evpn
-        enable on
 
-#
-# Setting Spines ports for Leafs
-#
-- name: Setting Spines ports for Leafs
-  ansible.builtin.include_tasks: set_nv_commands.yml
-  when: "'spine' in group_names"
-  vars:
-    swp_number: "{{ range_swp }}"
-    cmd:
-      - nv set vrf default router bgp neighbor swp{{ swp_number }}
-        remote-as external
-      - nv set vrf default router bgp neighbor swp{{ swp_number }}
-        address-family l2vpn-evpn
-        enable on
-  with_sequence: start={{ spine_swp_start }} count={{ groups['leaf'] | length }}
-  loop_control:
-    loop_var: range_swp
 
 #
 # Setting BGP for leafs
 #
-- name: Setting BGP for leafs
-  ansible.builtin.include_tasks: set_nv_commands.yml
+- name: Setting BGP for Leafs
+  ansible.builtin.include_tasks: set_bgp_leaf.yml
   when: "'leaf' in group_names"
-  vars:
-    cmd:
-      - nv set interface lo ip address {{ loopback }}/32
-      - nv set interface swp1-4 type swp
-      - nv set router bgp autonomous-system {{ asn }}
-      - nv set router bgp router-id {{ loopback }}
-      - nv set vrf default router bgp timers keepalive 1
-      - nv set vrf default router bgp timers hold 3
-      - nv set vrf default router bgp timers connection-retry 3
-      - nv set vrf default router bgp neighbor swp1 remote-as external
-      - nv set vrf default router bgp neighbor swp2 remote-as external
-      - nv set vrf default router bgp address-family ipv4-unicast network
-        {{ loopback }}/32
-      - nv set vrf default router bgp address-family ipv4-unicast redistribute
-        connected
-      - nv set evpn enable on
-      - nv set vrf default router bgp neighbor swp1 address-family l2vpn-evpn
-        enable on
-      - nv set vrf default router bgp neighbor swp2 address-family l2vpn-evpn
-        enable on
 
 #
 # Setting vLANs on the Leafs
 #
-- name: Setting vLANs for the Leafs
-  ansible.builtin.include_tasks: set_nv_commands.yml
+- name: Setting BGP for Leafs
+  ansible.builtin.include_tasks: set_vlan_leaf.yml
   when: "'leaf' in group_names"
-  vars:
-    cmd:
-      - nv set interface vlan100 vlan 100
-      - nv set interface vlan200 vlan 200
-      - nv set bridge domain br_default vlan 100 vni 100
-      - nv set bridge domain br_default vlan 200 vni 200
 
 #
-# Setting mLAG
+# Setting mLAG on desired Leafs
 #
 - name: Setting mLag
-  ansible.builtin.include_tasks: set_nv_commands.yml
+  ansible.builtin.include_tasks: set_mlag.yml
   when: (mlag is defined) and (mlag == "true")
-  vars:
-    cmd:
-      - nv set interface bond1 bond member swp5
-      - nv set interface bond1 bond mlag id 1
-      - nv set interface bond1-2 bridge domain br_default
-      - nv set interface bond2 bond member swp6
-      - nv set interface bond2 bond mlag id 2
-      - nv set interface peerlink bond member swp3
-      - nv set interface peerlink bond member swp4
-      - nv set mlag mac-address {{ mlag_mac }}
-      - nv set mlag backup {{ mlag_ip_backup }}
-      - nv set mlag peer-ip linklocal
-      - nv set nve vxlan mlag shared-address {{ mlag_shared_ip }}
-      - nv set vrf default router bgp neighbor peerlink.4094 remote-as external
-      - nv set vrf default router bgp neighbor peerlink.4094
-        address-family l2vpn-evpn enable on
+
 #
 #
 # Setting Access ports on the Leafs
