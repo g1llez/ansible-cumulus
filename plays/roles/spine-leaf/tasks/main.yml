@@ -26,13 +26,17 @@
     hostname: 'LE-{{ site }}{{ "%02d" | format(node_id) }}'
     loopback: "{{ loopback_prefix }}.{{ site_id }}.{{ node_id + 20 }}"
     asn: '{{ asn_prefix }}{{ site_id }}{{ "%02d" | format(node_id + 20) }}'
+  when: "'leaf' in group_names"
+
+- name: Setting facts for mLag
+  set_fact:
     mlag_mac: '{{ mlag_mac_prefix }}:{{ "%02d" | format(site_id) }}:{{ "%02d" |
       format(mlag_shared_id) }}'
     mlag_ip_backup:
       '{{ loopback_prefix }}.{{ site_id }}.{{ mlag_pair_id + 20 }}'
     mlag_shared_ip:
-      '{{ mlag_prefix }}.{{ site_id }}.{{ mlag_pair_id + 20 }}'
-  when: "'leaf' in group_names"
+      '{{ mlag_prefix }}.{{ site_id }}.{{ mlag_shared_id + 20 }}'
+  when: "('leaf' in group_names) and (mlag is defined) and (mlag == 'true')"
 
 #
 # Setting global configuration
@@ -59,16 +63,23 @@
 #
 # Setting vLANs on the Leafs
 #
-- name: Setting BGP for Leafs
+- name: Setting vLANs for Leafs
   ansible.builtin.include_tasks: set_vlan_leaf.yml
   when: "'leaf' in group_names"
+
+#
+# Setting uplink Leafs
+#
+- name: Setting uplinks
+  ansible.builtin.include_tasks: set_uplinks.yml
+  when: "'leaf' in group_names and (uplinks is defined)"
 
 #
 # Setting mLAG on desired Leafs
 #
 - name: Setting mLag
   ansible.builtin.include_tasks: set_mlag.yml
-  when: (mlag is defined) and (mlag == "true")
+  when: "'leaf' in group_names and (mlag is defined) and (mlag == 'true')"
 
 #
 #

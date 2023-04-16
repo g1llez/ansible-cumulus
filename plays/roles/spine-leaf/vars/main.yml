@@ -38,3 +38,8 @@ vlans_list:
     id: 200
   - name: Security
     id: 300
+
+#
+# Default switch paramets
+#
+number_of_ports: 6

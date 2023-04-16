@@ -1,0 +1,14 @@
+---
+
+#
+# Setting the uplinks on the Leafs
+#
+- name: Setting uplinks for the Leafs
+  ansible.builtin.include_tasks: set_nv_commands.yml
+  vars:
+    vlan: "{{ uplink_item }}"
+    cmd:
+      - nv set interface {{ uplink_item }} bridge domain br_default
+  loop: "{{ uplinks | split(',') }}"
+  loop_control:
+    loop_var: uplink_item

@@ -1,5 +1,5 @@
 ---
-- name: Testing
+- name: Restoring configuration
   hosts: cumulus
   gather_facts: false
 
@@ -30,3 +30,17 @@
         - nv unset interface peerlink
         - nv unset interface peerlink.4094
       notify: SaveConfig
+
+    - name: Flush handlers
+      meta: flush_handlers
+
+    - name: Getting configuration
+      become: true
+      ansible.builtin.shell: nv config show -o commands
+      register: output
+      changed_when: false
+
+    - name: Checking if configuration is empty
+      fail:
+        msg: "Configuration not empty. Config : \n {{ output.stdout_lines }}"
+      when: ( output.stdout_lines | count ) > 2
