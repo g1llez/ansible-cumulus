@@ -1,0 +1,14 @@
+---
+- name: Testing
+  hosts: cumulus
+  gather_facts: false
+
+  tasks:
+    - name: Showing cLag Status
+      become: true
+      ansible.builtin.shell: net show clag
+      register: output
+      changed_when: false
+    - name:
+      ansible.builtin.debug:
+        var: output.stdout_lines

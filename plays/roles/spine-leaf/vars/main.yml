@@ -14,19 +14,19 @@ asn_prefix: 65
 asn_spine_id: 1
 
 #
-# mLAG parameters
-#
-
-# MAC prefix for the mLAG
-mlag_mac_prefix: 44:38:39:FF
-mlag_prefix: 172.17
-
-#
 # Spine parameters
 #
 
 # Switchport number start for the connection to the Leafs.
 spine_swp_start: 1
+
+#
+# Spine parameters
+#
+
+# Switchport number start for the connection to the Spines.
+leaf_swp_start: 1
+
 
 #
 # vLAN parameters
@@ -40,6 +40,15 @@ vlans_list:
     id: 300
 
 #
-# Default switch paramets
+# Default switch parameters
 #
-number_of_ports: 6
+number_of_ports: 12
+
+#
+# mLAG parameters
+#
+
+# MAC prefix for the mLAG
+mlag_mac_prefix: 44:38:39:FF
+mlag_prefix: "10.10"
+mlag_peerlink_swp_start: "{{ number_of_ports - 1 }}"

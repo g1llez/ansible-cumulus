@@ -14,14 +14,25 @@
       - nv set vrf default router bgp timers keepalive 1
       - nv set vrf default router bgp timers hold 3
       - nv set vrf default router bgp timers connection-retry 3
-      - nv set vrf default router bgp neighbor swp1 remote-as external
-      - nv set vrf default router bgp neighbor swp2 remote-as external
       - nv set vrf default router bgp address-family ipv4-unicast network
         {{ loopback }}/32
       - nv set vrf default router bgp address-family ipv4-unicast redistribute
         connected
       - nv set evpn enable on
-      - nv set vrf default router bgp neighbor swp1 address-family l2vpn-evpn
+
+#
+# Setting Leafs ports for Spines
+#
+- name: Setting Leafs ports for Spines
+  ansible.builtin.include_tasks: set_nv_commands.yml
+  vars:
+    swp_number: "{{ swp_item }}"
+    cmd:
+      - nv set vrf default router bgp neighbor swp{{ swp_number }}
+        remote-as external
+      - nv set vrf default router bgp neighbor swp{{ swp_number }}
+        address-family l2vpn-evpn
         enable on
-      - nv set vrf default router bgp neighbor swp2 address-family l2vpn-evpn
-        enable on
+  with_sequence: start={{ leaf_swp_start }} count={{ groups['spine'] | length }}
+  loop_control:
+    loop_var: swp_item

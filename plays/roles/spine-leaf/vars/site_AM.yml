@@ -1,0 +1,15 @@
+---
+# vars file for spine-leaf for site PA
+
+#
+# NTP Server
+#
+ntp_server_1: 172.10.0.10
+ntp_server_2: 172.10.0.11
+
+#
+# Site information
+#
+
+# Id for the site for auto-generated configuration
+site_id: 3

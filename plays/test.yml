@@ -4,7 +4,24 @@
   gather_facts: false
 
   tasks:
-    - name: Testing a command
+    - name: Settings bonds
+      vars:
+        bond: "2"
+        bond_qty: "{{ bonds | split(',') | length }}"
+        bond_range: "{{ '1-' + bond if (bond_qty | int > 1) else '1' }}"
       ansible.builtin.debug:
-        msg: "It's a leaf! : {{ hostname }}"
-      when: "'leaf' in group_names"
+        msg:
+          - "{{ bond_range }}"
+
+
+#- name: Settings bonds
+#  ansible.builtin.include_tasks: set_nv_commands.yml
+#  vars:
+#    bond: "{{ bonds_item }}"
+#    bond_id: "{{ bonds | ansible.utils.index_of('eq', bond, wantlist=True) | int + 1}}"
+#    cmd:
+#      - nv set interface bond{{ bond_id }} bond member {{ bond }}
+#      - nv set interface bond{{ bond_id }} bond mlag id {{ bond_id }}
+#  with_items: "{{ bonds | split(',') }}"
+#  loop_control:
+#    loop_var: bonds_item

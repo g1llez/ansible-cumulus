@@ -1,3 +1,5 @@
--Add automatisation for number of leafs and spine
--Add mLAG support
--Add Border
+# Ajouter config par model de switch
+# Ajout uplink spine vers border du port swpX + 1
+# Testing NTP default (main)
+# Utiliser un if au lieu du shared_id (si paire = id -1, sinon = id)
+# Voir si on enlève mLag=true vu qu'on peut utiliser bonds is defined

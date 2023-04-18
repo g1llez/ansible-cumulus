@@ -4,6 +4,11 @@
 # Setting BGP for Spines
 #
 
+#
+# Known issues
+#  -If the loopback address change, it will add a new one in
+#
+
 - name: Setting BGP for spines
   ansible.builtin.include_tasks: set_nv_commands.yml
   vars:
