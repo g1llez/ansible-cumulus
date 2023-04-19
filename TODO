@@ -1,5 +1,7 @@
 # Ajouter config par model de switch
 # Ajout uplink spine vers border du port swpX + 1
-# Testing NTP default (main)
 # Utiliser un if au lieu du shared_id (si paire = id -1, sinon = id)
 # Voir si on enlève mLag=true vu qu'on peut utiliser bonds is defined
+# Voir si on peut limiter le output sur les set_commands
+# Fix range pour BGP si juste 1 leaf ou 1 spine
+# Voir si on peut utiliser le Index au lieu de mettre un NodeId

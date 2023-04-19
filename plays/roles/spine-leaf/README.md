@@ -1,31 +1,79 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+This role will configure a Spine/Leaf environment with BGP, VXLAN Active-Active and MLAG according to nVidia documentation you can find here: https://docs.nvidia.com/networking-ethernet-software/cumulus-linux-54/Network-Virtualization/VXLAN-Active-Active-Mode/
+
+The role will be able to configure N Spine connection to N Leaves. It will also be able to set uplinks (vLAN Aware) with or without a Bond to another equipment.
+
+The role will also accept Site as configuration in the host to use Site dependant configuration such as Loopback IP, ASN, Hostnames, NTP Servers, ...
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Tested with Cumulus Linux 5.4 using NVUE
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+Inventory
+
+The inventory should have a group for the spine and for the leaf and one named cumulus to set the variable on the two groups.
+
+Some variable are required in the inventory such as :
+  domain: The domain that will be use for the FQDN when setting dynamically the hostnames of the nodes
+  site: Name of the site. This will also be used in the hostname and will get a configuration for the current site. The role will try to find a configuration files in the vars folder named site_[name of your site].yml (see below)
+
+For each host, here's the variable that can be used :
+  mlag_shared_id: This will be used for the auto-generated MAC for the mLAG as well as the shared IP address. This value need to be uniq for a site.
+  bonds: To be used with mlag_shared_id. This value will tell which switchport to create a bond on. You can use more than one value separated by comma.
+  uplinks: Switchport list to create an uplink (vLAN Aware). You can use more than one value separated by comma.
+
+Inventory sample:
+
+[spine]
+172.17.0.10
+172.17.0.11
+
+[leaf]
+172.17.0.20 mlag_pair_id=2 mlag_shared_id=1 bonds=swp8,swp9
+172.17.0.21 mlag_pair_id=1 mlag_shared_id=1 bonds=swp8,swp9
+172.17.0.22 uplinks=swp8
+
+[cumulus:children]
+spine
+leaf
+
+[cumulus:vars]
+ansible_ssh_user=ansible
+domain=Lab.local
+site=AM
+
+Main variable file (main.yml)
+
+The sample in the project will have all required variable. The file is documented to explained the roles of the variables.
+
+Site specific variable file (site_yoursite.yml)
+
+Theses files are to setup some variable that will be specific to a specific site. You can set NTP servers and a site id.
+The site id will be used in many configuration to get different configuration for each site, it will be used for the BGP and for the mLAG
+
+There's a default site that contain the default variable, if the site provided in the inventory file doesn't exist in the vars folder, the default file will set the variables for the configuration. As the default file have all the required variables, you can change just a part of the configuration for a specific site. By example, if you set only the first NTP server in the site configuration, the second will be the one from the default site.
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+None
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+---
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+- hosts: cumulus
+  gather_facts: true
+  roles:
+    - spine-leaf
+
 
 License
 -------
@@ -35,4 +83,7 @@ BSD
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Gilles Auclair
+gauclair@sarius.ca
+Sarius
+http://www.sarius.ca/

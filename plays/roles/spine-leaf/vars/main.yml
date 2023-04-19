@@ -1,7 +1,13 @@
 ---
 # vars file for spine-leaf
 
+#
+# Global parameters
+#
 loopback_prefix: 172.16
+ntp_server_1: 0.ca.pool.ntp.org
+ntp_server_2: 1.ca.pool.ntp.org
+
 
 #
 # BGP ASN parameters

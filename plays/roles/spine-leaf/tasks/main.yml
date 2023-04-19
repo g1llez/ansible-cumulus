@@ -15,17 +15,26 @@
 # Setting facts for Spines and Leafs
 #
 - name: Setting facts for Spine
+  vars:
+    node_id:
+      "{{ groups['spine'] |
+      ansible.utils.index_of('eq', inventory_hostname) + 1 }}"
   set_fact:
-    hostname: 'SP-{{ site }}{{ "%02d" | format(node_id) }}'
+    hostname: 'SP-{{ site }}{{ "%02d" | format(node_id | int) }}'
     loopback: "{{ loopback_prefix }}.{{ site_id }}.{{ node_id }}"
     asn: '{{ asn_prefix }}{{ site_id }}{{ "%02d" | format(asn_spine_id) }}'
   when: "'spine' in group_names"
 
 - name: Setting facts for Leafs
+  vars:
+    node_id:
+      "{{ groups['leaf'] |
+      ansible.utils.index_of('eq', inventory_hostname) + 1 }}"
   set_fact:
-    hostname: 'LF-{{ site }}{{ "%02d" | format(node_id) }}'
-    loopback: "{{ loopback_prefix }}.{{ site_id }}.{{ node_id + 20 }}"
-    asn: '{{ asn_prefix }}{{ site_id }}{{ "%02d" | format(node_id + 20) }}'
+    hostname: 'LF-{{ site }}{{ "%02d" | format(node_id | int) }}'
+    loopback: "{{ loopback_prefix }}.{{ site_id }}.{{ (node_id | int) + 20 }}"
+    asn:
+      '{{ asn_prefix }}{{ site_id }}{{ "%02d" | format(node_id | int + 20) }}'
   when: "'leaf' in group_names"
 
 - name: Setting facts for mLag
@@ -36,7 +45,9 @@
       '{{ loopback_prefix }}.{{ site_id }}.{{ mlag_pair_id + 20 }}'
     mlag_shared_ip:
       '{{ mlag_prefix }}.{{ site_id }}.{{ mlag_shared_id + 20 }}'
-  when: "('leaf' in group_names) and (mlag is defined) and (mlag == 'true')"
+  when:
+    "'leaf' in group_names and (mlag_pair_id is defined) and (bonds is defined)"
+
 
 #
 # Setting global configuration
@@ -79,7 +90,8 @@
 #
 - name: Setting mLag
   ansible.builtin.include_tasks: set_mlag.yml
-  when: "'leaf' in group_names and (mlag is defined) and (mlag == 'true')"
+  when:
+    "'leaf' in group_names and (mlag_pair_id is defined) and (bonds is defined)"
 
 #
 #

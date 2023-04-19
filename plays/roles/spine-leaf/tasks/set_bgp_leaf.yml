@@ -6,9 +6,11 @@
 - name: Setting BGP for Leafs
   ansible.builtin.include_tasks: set_nv_commands.yml
   vars:
+    swp_range:
+      "{{ '1-' + (number_of_ports | string) if number_of_ports > 1 else '1' }}"
     cmd:
       - nv set interface lo ip address {{ loopback }}/32
-      - nv set interface swp1-{{ number_of_ports }} type swp
+      - nv set interface swp{{ swp_range }} type swp
       - nv set router bgp autonomous-system {{ asn }}
       - nv set router bgp router-id {{ loopback }}
       - nv set vrf default router bgp timers keepalive 1

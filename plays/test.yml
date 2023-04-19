@@ -5,13 +5,9 @@
 
   tasks:
     - name: Settings bonds
-      vars:
-        bond: "2"
-        bond_qty: "{{ bonds | split(',') | length }}"
-        bond_range: "{{ '1-' + bond if (bond_qty | int > 1) else '1' }}"
       ansible.builtin.debug:
         msg:
-          - "{{ bond_range }}"
+          - "{{ groups['leaf'] | ansible.utils.index_of('eq', inventory_hostname) + 1 }}"
 
 
 #- name: Settings bonds
