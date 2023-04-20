@@ -24,61 +24,9 @@
 #
 # Setting facts for Spines and Leafs
 #
-- name: Setting facts for Spine
-  vars:
-    node_id:
-      "{{ groups['spine'] |
-      ansible.utils.index_of('eq', inventory_hostname) + 1 }}"
-  set_fact:
-    hostname: 'SP-{{ site }}{{ "%02d" | format(node_id | int) }}'
-    loopback: "{{ loopback_prefix }}.{{ site_id }}.{{ node_id }}"
-    asn: '{{ asn_prefix }}{{ site_id }}{{ "%02d" | format(asn_spine_id) }}'
-  when: "'spine' in group_names"
-
-- name: Setting facts for Leafs
-  vars:
-    node_id:
-      "{{ groups['leaf'] |
-      ansible.utils.index_of('eq', inventory_hostname) + 1 }}"
-  set_fact:
-    hostname: 'LF-{{ site }}{{ "%02d" | format(node_id | int) }}'
-    loopback: "{{ loopback_prefix }}.{{ site_id }}.{{ (node_id | int) + 20 }}"
-    asn:
-      '{{ asn_prefix }}{{ site_id }}{{ "%02d" | format(node_id | int + 20) }}'
-  when: "'leaf' in group_names"
-
-- name: Setting facts for Borders
-  vars:
-    node_id:
-      "{{ groups['border'] |
-      ansible.utils.index_of('eq', inventory_hostname) + 1 }}"
-  set_fact:
-    hostname: 'BO-{{ site }}{{ "%02d" | format(node_id | int) }}'
-    loopback: "{{ loopback_prefix }}.{{ site_id }}.{{ (node_id | int) + 50 }}"
-    asn:
-      '{{ asn_prefix }}{{ site_id }}{{ "%02d" | format(node_id | int + 50) }}'
-  when: "'border' in group_names"
-
-- name: Setting facts for mLag
-  vars:
-    node_id:
-      "{{ groups['leaf'] |
-      ansible.utils.index_of('eq', inventory_hostname) + 1 }}"
-    mlag_pair_id:
-      "{{ (node_id | int-1) if
-              (node_id | int is divisibleby 2) else (node_id | int+1) }}"
-    mlag_shared_id:
-      "{{ (node_id | int-1) if (node_id | int is divisibleby 2) else node_id }}"
-  set_fact:
-    mlag_mac: '{{ mlag_mac_prefix }}:{{ "%02d" | format(site_id) }}:{{ "%02d" |
-      format(mlag_shared_id | int) }}'
-    mlag_ip_backup:
-      '{{ loopback_prefix }}.{{ site_id }}.{{ (mlag_pair_id | int) + 20 }}'
-    mlag_shared_ip:
-      '{{ mlag_prefix }}.{{ site_id }}.{{ (mlag_shared_id | int) + 20 }}'
-  when:
-    "'leaf' in group_names and (bonds is defined)"
-
+- name: Setting Hostname
+  ansible.builtin.include_tasks: set_facts.yml
+  register: output
 
 #
 # Setting global configuration

@@ -1,5 +1,3 @@
-# Ajout uplink spine vers border du port swpX + 1
-# Utiliser un if au lieu du backup_ip pour mLag (si paire = id -1, sinon = id + 1)
 # Voir si on peut limiter le output sur les set_commands
 # Ramener les calcules dans le mains (ex. swp list )
 # Ajuster pour enlever les configs si possible d'avoir +
