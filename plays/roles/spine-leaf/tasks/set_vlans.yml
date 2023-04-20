@@ -1,9 +1,9 @@
 ---
 
 #
-# Setting the vLANs on the Leafs
+# Setting the vLANs on the Leafs and Borders
 #
-- name: Setting vLANs for the Leafs
+- name: Setting vLANs for the Leafs and Borders
   ansible.builtin.include_tasks: set_nv_commands.yml
   vars:
     vlan: "{{ vlan_item }}"

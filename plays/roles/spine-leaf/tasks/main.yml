@@ -47,6 +47,18 @@
       '{{ asn_prefix }}{{ site_id }}{{ "%02d" | format(node_id | int + 20) }}'
   when: "'leaf' in group_names"
 
+- name: Setting facts for Borders
+  vars:
+    node_id:
+      "{{ groups['border'] |
+      ansible.utils.index_of('eq', inventory_hostname) + 1 }}"
+  set_fact:
+    hostname: 'BO-{{ site }}{{ "%02d" | format(node_id | int) }}'
+    loopback: "{{ loopback_prefix }}.{{ site_id }}.{{ (node_id | int) + 50 }}"
+    asn:
+      '{{ asn_prefix }}{{ site_id }}{{ "%02d" | format(node_id | int + 50) }}'
+  when: "'border' in group_names"
+
 - name: Setting facts for mLag
   vars:
     node_id:
@@ -86,23 +98,24 @@
 #
 # Setting BGP for leafs
 #
-- name: Setting BGP for Leafs
+- name: Setting BGP for Leafs and Borders
   ansible.builtin.include_tasks: set_bgp_leaf.yml
-  when: "'leaf' in group_names"
+  when: "'leaf' in group_names or 'border' in group_names"
 
 #
-# Setting vLANs on the Leafs
+# Setting vLANs on the Leafs and Borders
 #
-- name: Setting vLANs for Leafs
-  ansible.builtin.include_tasks: set_vlan_leaf.yml
-  when: "'leaf' in group_names"
+- name: Setting vLANs for Leafs and Borders
+  ansible.builtin.include_tasks: set_vlans.yml
+  when: "'leaf' in group_names or 'border' in group_names"
 
 #
-# Setting uplink Leafs
+# Setting uplink Leafs and Borders
 #
 - name: Setting uplinks
   ansible.builtin.include_tasks: set_uplinks.yml
-  when: "'leaf' in group_names and (uplinks is defined)"
+  when: "('leaf' in group_names or 'border' in group_names)
+  and (uplinks is defined)"
 
 #
 # Setting mLAG on desired Leafs
