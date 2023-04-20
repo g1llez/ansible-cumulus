@@ -11,8 +11,19 @@
 number_of_ports:
   "{{ ansible_facts['interfaces'] | select('match', 'swp*') | length }}"
 
-# Switchport number start for the connection from spine to leaf
+# Switchport number start for the connection between the spine and the leaf
 spine_leaf_swp_start: 1
 
+#
+# Configuration for the spine
+#
+
+# Switchport number start for the Borders connection
+spine_border_swp_start: "{{number_of_ports | int - 1}}"
+
+#
+# Configuration for the leaf
+#
+
 # Switchport number start for the peerlink
-mlag_peerlink_swp_start: "{{ number_of_ports | int - 1 }}"
+mlag_peerlink_swp_start: "{{number_of_ports | int - 1}}"
