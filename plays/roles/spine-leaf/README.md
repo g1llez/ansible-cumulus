@@ -24,7 +24,6 @@ Some variable are required in the inventory such as :
   site: Name of the site. This will also be used in the hostname and will get a configuration for the current site. The role will try to find a configuration files in the vars folder named site_[name of your site].yml (see below)
 
 For each host, here's the variable that can be used :
-  mlag_shared_id: This will be used for the auto-generated MAC for the mLAG as well as the shared IP address. This value need to be uniq for a site.
   bonds: To be used with mlag_shared_id. This value will tell which switchport to create a bond on. You can use more than one value separated by comma.
   uplinks: Switchport list to create an uplink (vLAN Aware). You can use more than one value separated by comma.
 
@@ -35,8 +34,8 @@ Inventory sample:
 172.17.0.11
 
 [leaf]
-172.17.0.20 mlag_pair_id=2 mlag_shared_id=1 bonds=swp8,swp9
-172.17.0.21 mlag_pair_id=1 mlag_shared_id=1 bonds=swp8,swp9
+172.17.0.20 mlag_pair_id=2 bonds=swp8,swp9
+172.17.0.21 mlag_pair_id=1 bonds=swp8,swp9
 172.17.0.22 uplinks=swp8
 
 [cumulus:children]
@@ -58,6 +57,13 @@ Theses files are to setup some variable that will be specific to a specific site
 The site id will be used in many configuration to get different configuration for each site, it will be used for the BGP and for the mLAG
 
 There's a default site that contain the default variable, if the site provided in the inventory file doesn't exist in the vars folder, the default file will set the variables for the configuration. As the default file have all the required variables, you can change just a part of the configuration for a specific site. By example, if you set only the first NTP server in the site configuration, the second will be the one from the default site.
+
+Switch specific variable (switch_product_name.yml)
+
+Theses variables files will define switch specific information such as port quantity, which port to use for the spine/leaf connection, peerlink, etc.
+
+The playbook will automatically look for a file named with the product name from the facts (ansible_facts['product_name']).
+
 
 Dependencies
 ------------

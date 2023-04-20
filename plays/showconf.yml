@@ -11,4 +11,4 @@
       changed_when: false
     - name:
       ansible.builtin.debug:
-        var: output
+        var: output.stdout_lines

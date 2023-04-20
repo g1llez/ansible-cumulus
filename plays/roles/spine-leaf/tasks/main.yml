@@ -48,13 +48,19 @@
   when: "'leaf' in group_names"
 
 - name: Setting facts for mLag
+  vars:
+    node_id:
+      "{{ groups['leaf'] |
+      ansible.utils.index_of('eq', inventory_hostname) + 1 }}"
+    mlag_shared_id:
+      "{{ (node_id | int-1) if (node_id | int is divisibleby 2) else node_id }}"
   set_fact:
     mlag_mac: '{{ mlag_mac_prefix }}:{{ "%02d" | format(site_id) }}:{{ "%02d" |
-      format(mlag_shared_id) }}'
+      format(mlag_shared_id | int) }}'
     mlag_ip_backup:
       '{{ loopback_prefix }}.{{ site_id }}.{{ mlag_pair_id + 20 }}'
     mlag_shared_ip:
-      '{{ mlag_prefix }}.{{ site_id }}.{{ mlag_shared_id + 20 }}'
+      '{{ mlag_prefix }}.{{ site_id }}.{{ (mlag_shared_id | int) + 20 }}'
   when:
     "'leaf' in group_names and (mlag_pair_id is defined) and (bonds is defined)"
 
