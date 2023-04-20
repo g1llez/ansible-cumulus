@@ -27,7 +27,7 @@
         redistribute connected
 
 #
-# Setting Spines ports for Leafs
+# Setting Spines ports to the Leafs
 #
 - name: Setting Spines ports for Leafs
   ansible.builtin.include_tasks: set_nv_commands.yml
@@ -39,6 +39,7 @@
       - nv set vrf default router bgp neighbor swp{{ swp_number }}
         address-family l2vpn-evpn
         enable on
-  with_sequence: start={{ spine_swp_start }} count={{ groups['leaf'] | length }}
+  with_sequence:
+    start={{ spine_leaf_swp_start }} count={{ groups['leaf'] | length }}
   loop_control:
     loop_var: swp_item

@@ -1,13 +1,13 @@
 ---
 - name: Testing
   hosts: cumulus
-  gather_facts: false
+  gather_facts: true
 
   tasks:
     - name: Settings bonds
       ansible.builtin.debug:
         msg:
-          - "{{ groups['leaf'] | ansible.utils.index_of('eq', inventory_hostname) + 1 }}"
+          - "{{ ansible_facts['interfaces'] | select('match', 'swp*') | length }}"
 
 
 #- name: Settings bonds

@@ -1,0 +1,23 @@
+---
+#
+# Configuration for the Mellanox SN2100
+#
+
+# Ports speed
+# 16x 100 Gbps (swp1-16)
+
+#
+# Spine / Leaf uplink parameters
+#
+
+# Number of port of the switch
+number_of_ports:
+  "{{ ansible_facts['interfaces'] | select('match', 'swp*') | length }}"
+
+# Switchport number start for the connection from spine to leaf
+# Using the first 100 Gbps port
+spine_leaf_swp_start: 1
+
+# Switchport number start for the peerlink
+# Using the last two 25 Gbps ports
+mlag_peerlink_swp_start: "{{ number_of_ports | int - 1 }}"

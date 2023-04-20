@@ -12,6 +12,16 @@
         - "site_default.yml"
 
 #
+# Include vars for the current switch model
+#
+- name: Include vars for the current switch
+  ansible.builtin.include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "switch_{{ ansible_facts['product_name'] }}.yml"
+        - "switch_default.yml"
+
+#
 # Setting facts for Spines and Leafs
 #
 - name: Setting facts for Spine

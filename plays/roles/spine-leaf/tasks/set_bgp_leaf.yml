@@ -7,7 +7,7 @@
   ansible.builtin.include_tasks: set_nv_commands.yml
   vars:
     swp_range:
-      "{{ '1-' + (number_of_ports | string) if number_of_ports > 1 else '1' }}"
+      "{{ '1-' + (number_of_ports | string) if (number_of_ports | int) > 1 else '1' }}"
     cmd:
       - nv set interface lo ip address {{ loopback }}/32
       - nv set interface swp{{ swp_range }} type swp
@@ -23,7 +23,7 @@
       - nv set evpn enable on
 
 #
-# Setting Leafs ports for Spines
+# Setting Leafs ports to the Spines
 #
 - name: Setting Leafs ports for Spines
   ansible.builtin.include_tasks: set_nv_commands.yml
@@ -35,6 +35,7 @@
       - nv set vrf default router bgp neighbor swp{{ swp_number }}
         address-family l2vpn-evpn
         enable on
-  with_sequence: start={{ leaf_swp_start }} count={{ groups['spine'] | length }}
+  with_sequence:
+    start={{ spine_leaf_swp_start }} count={{ groups['spine'] | length }}
   loop_control:
     loop_var: swp_item
