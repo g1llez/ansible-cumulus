@@ -1,0 +1,38 @@
+{% set ns = namespace() %}
+{% set ns.group_last = -1 %}
+{% set ns.to_skip = [] %}
+{{swp_list[0]}}
+{% for x in swp_list[:-1] %}
+{% set ns.y_exit = false %}
+{% for y in swp_list[loop.index0 + 1:] %}
+x{{x}} y{{y}} skip:{{ns.to_skip}} y_exit:{{ns.y_exit}} gl:{{ns.group_last}}
+{% if x not in ns.to_skip and not ns.y_exit %}
+{% if (ns.group_last == -1) %}
+{% if (x + 1) == y %}
+{% set ns.group_last = y %}
+{{ ns.to_skip.append(y) }}
+{% else %}
+,{{x}}
+{{ ns.to_skip.append(x) }}
+{% endif %}
+{% else %}
+{% if (x + 1) == y %}
+{% set ns.group_last = y %}
+{{ ns.to_skip.append(y) }}
+{% set ns.y_exit = true %}
+{% else %}
+-{{y}}
+{{ ns.to_skip.append(y) }}
+{% set ns.y_exit = true %}
+{% set ns.group_last = -1 %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% if ( ns.group_last != -1 ) and ( x == swp_list[swp_list|length - 2] ) %}
+-{{swp_list[swp_list|length - 1]}}
+{% endif %}
+{% endfor %}
+{{ ns.to_skip }}
+{{ swp_list }}
+skip:{{ns.to_skip}} y_exit:{{ns.y_exit}} gl:{{ns.group_last}}

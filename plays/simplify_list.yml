@@ -1,0 +1,50 @@
+---
+
+#
+# Simplify a list of number
+#
+# Example
+#
+# With list 1,4,5,6,7,10,11
+# The simplified version will be 1,4-7,10-11
+
+- name: Resetting
+  set_fact:
+    output_list: ""
+
+- name: Showing input list
+  debug:
+    msg: "{{input_list}}"
+
+- name: Checking if list is empty
+  set_fact:
+    output_list: ""
+  when: input_list | length <= 0
+
+- name: If only one item, return it
+  set_fact:
+    output_list: "{{ input_list | join(',') }}"
+  when: input_list | length == 1
+
+
+#x = 0
+#y = x + 1
+#group_last = -1
+#output_list = list[x]
+#while (x < len(list)
+#  while (y <= len(list))
+#
+#    if (group_last == -1)
+#       if list[x] + 1 = list[y] then
+#          group_last = y
+#       else
+#          output_list = "," + list[y]
+#    else
+#        if list[x] + 1 = list[y] then
+#          group_last = y
+#        else
+#           output_list = "-" + list[y]
+#
+#    y = y + 1
+#
+#  x = x + 1

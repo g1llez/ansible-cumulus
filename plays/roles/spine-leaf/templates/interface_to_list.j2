@@ -1,0 +1,59 @@
+{%- set ns = namespace() -%}
+{%- set ns.output = [] -%}
+{%- if (swp_list | length) == 1 -%}
+  {{- swp_list[0] -}}
+{%- endif -%}
+{%- if (swp_list | length) > 1 -%}
+  {%- set ns.group_first = -1 -%}
+  {%- set ns.group_last = -1 -%}
+  {%- set ns.to_skip = [] -%}
+  {%- for x in swp_list[:-1] -%}
+
+    {%- set ns.y_exit = false -%}
+    {%- if not x in ns.to_skip -%}
+
+      {%- for y in swp_list[loop.index0 + 1:] -%}
+
+        {%- if not ns.y_exit -%}
+
+          {%- if ns.group_first == -1 -%}
+
+             {%- if x + 1 == y -%}
+                {%- set ns.group_first = x -%}
+                {%- set ns.group_last = y -%}
+                {{- ns.to_skip.append(x) -}}
+                {{- ns.to_skip.append(y) -}}
+             {%- else -%}
+                {{- ns.output.append(x) -}}
+                {% set ns.y_exit = True %}
+             {%- endif -%}
+
+          {%- else -%}
+
+             {%- if ns.group_last + 1 == y -%}
+                {% set ns.group_last = y %}
+                {{- ns.to_skip.append(y) -}}
+             {%- else -%}
+                {{- ns.output.append(ns.group_first ~ '-' ~ ns.group_last) -}}
+                {%- set ns.group_first = -1 -%}
+                {%- set ns.group_last = -1 -%}
+                {%- set ns.y_exit = True -%}
+             {%- endif -%}
+
+          {%- endif -%}
+
+        {% endif -%}
+
+      {% endfor -%}
+
+    {%- endif -%}
+
+  {%- endfor -%}
+  {%- if ns.group_first != -1 -%}
+    {{- ns.output.append(ns.group_first ~ '-' ~ ns.group_last) -}}
+  {%- else -%}
+    {{- ns.output.append(swp_list[swp_list|length - 1]) -}}
+  {%- endif -%}
+
+  {{- ns.output | join(',') -}}
+{%- endif -%}

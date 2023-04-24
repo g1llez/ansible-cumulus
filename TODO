@@ -1,6 +1,6 @@
+# Ajout de possiblité d'avoir un port access
 # Voir si on peut limiter le output sur les set_commands
 # Ramener les calcules dans le mains (ex. swp list )
 # Ajuster pour enlever les configs si possible d'avoir +
    ex. vLAN
        Loopback
-# Ajout de possiblité d'avoir un port access

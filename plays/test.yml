@@ -1,13 +1,154 @@
 ---
 - name: Testing
   hosts: cumulus
-  gather_facts: true
+  gather_facts: false
+
+  vars:
+    test_list:
+      - name: Test1
+        swp_tst: [5]
+        result: "5"
+      - name: Test2
+        swp_tst: [2, 5]
+        result: "2,5"
+      - name: Test3
+        swp_tst: [2, 3]
+        result: "2-3"
+      - name: Test4
+        swp_tst: [11, 7, 3, 2, 5, 10, 1]
+        result: "1-3,5,7,10-11"
+      - name: Test5
+        swp_tst: []
+        result: ""
+      - name: Test6
+        swp_tst: [1, 2, 3, 4, 5, 6]
+        result: "1-6"
+      - name: Test7
+        swp_tst: [1, 3, 5, 7, 9]
+        result: "1,3,5,7,9"
+
 
   tasks:
-    - name: Settings bonds
-      ansible.builtin.debug:
+    - name: Building result
+      vars:
+        swp_list: "{{item.swp_tst | sort}}"
+      set_fact:
+        output: "{{ lookup('ansible.builtin.template', '~/ansible-cumulus/plays/roles/spine-leaf/templates/interface_to_list.j2') | replace('\n', '') }}"
+      with_items: "{{test_list}}"
+      register: output
+
+#    - name:
+#      debug:
+#        var: output
+
+    - name:
+      fail:
         msg:
-          - "{{ ansible_facts['interfaces'] | select('match', 'swp*') | length }}"
+          - "{{ item.item.name }} failed"
+      when: item.item.result != item.ansible_facts.output
+      with_items: "{{output.results}}"
+
+#    - name: Simplifying list
+#      vars:
+#        swp_list: "{{item.swp_tst | sort}}"
+#      template:
+#        src: ~/ansible-cumulus/plays/roles/spine-leaf/templates/interface_to_list.j2
+#      register: output
+#      with_items: "{{test_list}}"
+#    - name: Checking results
+#      set_fact:
+#        result: "{{ lookup('template', '/tmp/slist-' ~ item.name) }}"
+##        expected_result: "{{item.result}}"
+#      with_items: "{{test_list}}"
+
+#  tasks:
+#    - name: Setting vars
+#      set_fact:
+#        sorted_list: "{{ test_list[3].swp_tst | sort }}"
+#    - name: Setting vars
+#      set_fact:
+#        output_list: "{{ sorted_list[0] }}"
+#        next_range: -1
+#        #"{{ sorted_list[1] if (sorted_list[0] + 1 == sorted_list[1]) else -1 }}"
+#        debug: ""
+#
+#    - name: Loop
+#      with_nested:
+#        - "{{ sorted_list[:-1] }}"
+#        - "{{ sorted_list[1:] }}"
+#      set_fact:
+#        next_range: "{{item[1] + 1
+#          if ( ( 3 == 3 ))
+#          else -1}}"
+#      vars:
+#        output_list: "{{ output_list ~ ',' ~ item[1] if (next_range == -1) else output_list}}"
+#        debug: "{{debug ~ ' ' ~ item[0] ~ '<>' ~ item[1] ~ ' NR' ~ next_range }}"
+#      register: output
+#
+#    - name:
+#      ansible.builtin.debug:
+#        msg: "{{debug}}"
+
+#  tasks:
+#    - name: Test
+#      ansible.builtin.include_tasks: testing.yml
+#      vars:
+#        test_name: "{{ test_item.name }}"
+#        input_list: "{{ test_item.swp_tst }}"
+#        expected_result: "{{ test_item.result }}"
+#      loop: "{{test_list}}"
+#      loop_control:
+#        loop_var: test_item
+#      register: test_result
+
+#    - name: Test
+#      ansible.builtin.include_tasks: simplify_list.yml
+#      vars:
+#        input_list: "{{ test_item.swp_tst }}"
+#      loop: "{{test_list}}"
+#      loop_control:
+#        loop_var: test_item
+#      register: test_result
+#
+#    - name: Show tests result
+#      ansible.builtin.debug:
+#        msg: "{{simplified_result}}"
+#
+#    - name: Check test
+#      with_items: "{{ test_result.results }}"
+
+#  tasks:
+#    - name: Sorting list and preparing group
+#      vars:
+#        interface_list: "{{interfaces | sort}}"
+#        first_value: "{{interface_list[0]}}"
+#      set_fact:
+#        interface_list_sorted: "{{interface_list}}"
+#        interface_group: ["{{first_value}}"]
+#        last_value: "{{first_value}}"
+#        group_start: "{{ interface_list[0] if
+#          interface_list[1] == (first_value | int + 1) else -1 }}"
+#
+#    - name: Checking values
+#      ansible.builtin.debug:
+#        msg:
+#          - "Interface list {{interface_list_sorted}}"
+#          - "Last value : {{last_value}}"
+#          - "Interface group : {{interface_group}}"
+#          - "Group start : {{group_start}}"
+#
+#    - name:
+#      set_fact:
+#
+#        interface_group: "{{ interface_group +  }}"
+#      loop: "{{interface_list_sorted[1:]}}"
+#
+#    - name: Checking values
+#      ansible.builtin.debug:
+#        msg:
+#          - "Interface list {{interface_list_sorted}}"
+#          - "Last value : {{last_value}}"
+#          - "Interface group : {{interface_group}}"
 
 
 #- name: Settings bonds
