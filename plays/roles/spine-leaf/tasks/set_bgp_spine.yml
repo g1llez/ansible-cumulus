@@ -8,12 +8,12 @@
 # Known issues
 #  -If the loopback address change, it will add a new one in
 #
+
+
 - name: Setting BGP for spines
   ansible.builtin.include_tasks: set_nv_commands.yml
   vars:
     leaf_qty: "{{ groups['leaf'] | length + groups['border'] | length }}"
-    swp_range:
-      "{{ '1-' + (leaf_qty | string) if (leaf_qty | int) > 1 else '1' }}"
     cmd:
       - nv set interface lo ip address {{ loopback }}/32
       - nv set interface swp{{ swp_range }}
@@ -39,8 +39,6 @@
       - nv set vrf default router bgp neighbor swp{{ swp_number }}
         address-family l2vpn-evpn
         enable on
-  with_sequence:
-    start={{ spine_leaf_swp_start }} count={{ groups['leaf'] |
-    length + groups['border'] | length}}
+  with_items: "{{swp_list}}"
   loop_control:
     loop_var: swp_item

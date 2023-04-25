@@ -6,7 +6,7 @@
 - name: Setting mLag
   ansible.builtin.include_tasks: set_nv_commands.yml
   vars:
-    bond_qty: "{{ bonds | split(',') | length }}"
+    bond_qty: "{{ [bonds] | flatten | length }}"
     bond_range: "{{ '1-' + bond_qty if bond_qty | int > 1 else '1' }}"
     cmd:
       - nv set interface bond{{ bond_range }} bridge domain br_default
@@ -26,11 +26,11 @@
   ansible.builtin.include_tasks: set_nv_commands.yml
   vars:
     bond: "{{ bonds_item }}"
-    bond_id: "{{ bonds | ansible.utils.index_of('eq', bond) + 1}}"
+    bond_id: "{{ [bonds] | flatten | ansible.utils.index_of('eq', bond) + 1}}"
     cmd:
-      - nv set interface bond{{ bond_id }} bond member {{ bond }}
+      - nv set interface bond{{ bond_id }} bond member swp{{ bond }}
       - nv set interface bond{{ bond_id }} bond mlag id {{ bond_id }}
-  with_items: "{{ bonds | split(',') }}"
+  with_items: "{{ [bonds] | flatten }}"
   loop_control:
     loop_var: bonds_item
 

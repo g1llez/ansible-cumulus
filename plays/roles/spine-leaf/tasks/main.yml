@@ -24,7 +24,7 @@
 #
 # Setting facts for Spines and Leafs
 #
-- name: Setting Hostname
+- name: Setting Facts
   ansible.builtin.include_tasks: set_facts.yml
   register: output
 

@@ -19,7 +19,7 @@ spine_leaf_swp_start: 1
 #
 
 # Switchport number start for the Borders connection
-spine_border_swp_start: "{{number_of_ports | int - 1}}"
+spine_border_swp_start: 5
 
 #
 # Configuration for the leaf

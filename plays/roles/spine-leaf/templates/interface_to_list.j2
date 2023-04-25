@@ -1,21 +1,40 @@
+{#- This script will generate a simplified list of number to match the       -#}
+{#- Cumulus Linux configuration                                              -#}
+{#- The script require the list to be sorted                                 -#}
+
+{#- Setting variable using namespace so that variable don't reinitiate during-#}
+{#- the loop                                                                 -#}
 {%- set ns = namespace() -%}
 {%- set ns.output = [] -%}
-{%- if (swp_list | length) == 1 -%}
-  {{- swp_list[0] -}}
-{%- endif -%}
-{%- if (swp_list | length) > 1 -%}
+
+{#- If the list is only one item, return the item                            -#}
+{%- if (swp_list_sorted | length) == 1 -%}
+  {{- swp_list_sorted[0] -}}
+{%- elif (swp_list_sorted | length) > 1 -%}
+
+  {#- Preparing variable for the loop                                        -#}
   {%- set ns.group_first = -1 -%}
   {%- set ns.group_last = -1 -%}
   {%- set ns.to_skip = [] -%}
-  {%- for x in swp_list[:-1] -%}
 
+  {#- Looping on all list but the last one with X                            -#}
+  {%- for x in swp_list_sorted[:-1] -%}
+
+    {#- Re-Setting y_exit so we loop on y value until we're done             -#}
     {%- set ns.y_exit = false -%}
+
+    {#- Skipping if the value as already been included in the result #}
     {%- if not x in ns.to_skip -%}
 
-      {%- for y in swp_list[loop.index0 + 1:] -%}
+      {#- Looping from second element to last                                -#}
+      {%- for y in swp_list_sorted[loop.index0 + 1:] -%}
 
+        {# If we're not done on this loop, continu                           -#}
         {%- if not ns.y_exit -%}
 
+          {#- If we are not in a group, check if the next value is following -#}
+          {#- the current value, if so, we start the group with theses values-#}
+          {#- if not, we add the value to the output and exit the loop       -#}
           {%- if ns.group_first == -1 -%}
 
              {%- if x + 1 == y -%}
@@ -29,6 +48,8 @@
              {%- endif -%}
 
           {%- else -%}
+          {#- If we are in a group, check if next value is to be added or if -#}
+          {#- it's the end of the loop                                       -#}
 
              {%- if ns.group_last + 1 == y -%}
                 {% set ns.group_last = y %}
@@ -49,11 +70,16 @@
     {%- endif -%}
 
   {%- endfor -%}
+
+  {#- If we finished the loop and w are still in a group, we return the      -#}
+  {#- value for this group                                                   -#}
   {%- if ns.group_first != -1 -%}
     {{- ns.output.append(ns.group_first ~ '-' ~ ns.group_last) -}}
   {%- else -%}
-    {{- ns.output.append(swp_list[swp_list|length - 1]) -}}
+    {{- ns.output.append(swp_list_sorted[swp_list_sorted|length - 1]) -}}
   {%- endif -%}
 
+  {#- Sending output                                                         -#}
   {{- ns.output | join(',') -}}
+
 {%- endif -%}
