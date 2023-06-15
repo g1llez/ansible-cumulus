@@ -6,4 +6,9 @@
 # Tester avec 0 vLAN et 1 vLAN
 # Test swp_range pour Spine
 #   Enlever debug
-#
+# Ajout SNMP
+# MAC marche pas en haut de 10
+# S'assurer que les Border peuvent avoir un mLAG
+# Corriger command et commands pour être strict sur la commande :
+  # grep "\<deiauk\>" textfile
+# Ajouter option pour become

@@ -5,7 +5,7 @@
 
   tasks:
     - name: Showing configuration as commands
-      become: true
+      become: false
       ansible.builtin.shell: nv config show -o commands
       register: output
       changed_when: false

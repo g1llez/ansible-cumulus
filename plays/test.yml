@@ -1,7 +1,7 @@
 ---
 - name: Testing
-  hosts: cumulus
-  gather_facts: false
+  hosts: all
+  gather_facts: true
 
   vars:
     test_list:
@@ -17,9 +17,9 @@
       - name: Test4
         swp_tst: [11, 7, 3, 2, 5, 10, 1]
         result: "1-3,5,7,10-11"
-      - name: Test5
-        swp_tst: []
-        result: ""
+#      - name: Test5
+#        swp_tst: []
+#        result: ""
       - name: Test6
         swp_tst: [1, 2, 3, 4, 5, 6]
         result: "1-6"
@@ -30,13 +30,10 @@
         swp_tst: [1, 2, 3]
         result: "1-3"
 
-
   tasks:
     - name: Building result
-      vars:
-        swp_list_sorted: "{{item.swp_tst | sort}}"
       set_fact:
-        output: "{{ lookup('ansible.builtin.template', '~/ansible-cumulus/plays/roles/spine-leaf/templates/interface_to_list.j2') | replace('\n', '') }}"
+        result: "{{ [item.swp_tst] | flatten | ansible.netcommon.vlan_parser }}"
       with_items: "{{test_list}}"
       register: output
 
@@ -44,8 +41,23 @@
       fail:
         msg:
           - "{{ item.item.name }} failed"
-      when: item.item.result != item.ansible_facts.output
+      when: item.item.result != item.ansible_facts.result[0]
       with_items: "{{output.results}}"
+
+#    - name: Building result
+#      vars:
+#        swp_list_sorted: "{{item.swp_tst | sort}}"
+#      set_fact:
+#        output: "{{ lookup('ansible.builtin.template', '~/ansible-cumulus/plays/roles/spine-leaf/templates/interface_to_list.j2') | replace('\n', '') }}"
+#      with_items: "{{test_list}}"
+#      register: output
+#
+#    - name:
+#      fail:
+#        msg:
+#          - "{{ item.item.name }} failed"
+#      when: item.item.result != item.ansible_facts.output
+#      with_items: "{{output.results}}"
 
 #    - name: Simplifying list
 #      vars:

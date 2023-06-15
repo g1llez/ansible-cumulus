@@ -36,7 +36,7 @@
   set_fact:
     hostname: 'SP-{{ site }}{{ "%02d" | format(node_id | int) }}'
     loopback: "{{ loopback_prefix }}.{{ site_id }}.{{ node_id }}"
-    asn: '{{ asn_prefix }}{{ site_id }}{{ "%02d" | format(asn_spine_id) }}'
+    asn: '{{ asn_prefix }}{{ site_id }}01'
   when: "'spine' in group_names"
 
 - name: Setting switchport list for the Leafs and Borders to Spines

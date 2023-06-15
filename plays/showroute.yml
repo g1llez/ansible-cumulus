@@ -5,7 +5,7 @@
 
   tasks:
     - name: Showing configuration as commands
-      become: true
+      become: false
       ansible.builtin.shell: net show route
       register: output
       changed_when: false

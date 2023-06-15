@@ -1,0 +1,35 @@
+---
+
+#
+# Test de ping
+#
+
+- name: Test de route
+  hosts: cumulus
+  gather_facts: true
+
+
+  tasks:
+
+    - name: Inclure les variables global
+      ansible.builtin.include_vars: "{{ item }}"
+      with_first_found:
+        - files:
+            - "/home/gillez/github/ansible-cumulus/plays/vars_{{ var_playbook }}.yml"
+            - "/home/gillez/github/ansible-cumulus/plays/vars_test_default.yml"
+      tags: spine
+
+    - name: Inclure les variables global
+      ansible.builtin.include_vars: "{{ item }}"
+      with_first_found:
+        - files:
+            - "/home/gillez/github/ansible-cumulus/plays/vars_{{ var_playbook }}.yml"
+            - "/home/gillez/github/ansible-cumulus/plays/vars_test_default.yml"
+      tags: leaf
+
+    - debug:
+        msg: "{{ item['id'] }}"
+      with_items: "{{vlans_list}}"
+      loop_control:
+        label: "{{ item['name'] }}"
+      tags: debug

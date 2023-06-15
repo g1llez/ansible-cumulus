@@ -3,22 +3,24 @@
 - name: Checking if the configs exist
   become: true
   ansible.builtin.shell: |
-    nv config show -o commands | grep '{{ item }}' | wc -l
+    nv config show -o commands | grep '{{ cmd_to_check }}' | wc -l
   with_items: "{{ cmd }}"
+  loop_control:
+    loop_var: cmd_to_check
   register: cmd_exist
   vars:
     cmde: cmd
   changed_when: false
-#- name: Debug
-#  ansible.builtin.debug:
-#    var: cmd_exist
 
 - name: Applying commands
   become: true
-  ansible.builtin.shell: "{{ item.item }}"
-  when: item.stdout != "1"
+  ansible.builtin.shell: "{{ result_cmd.cmd_to_check }}"
+  when: result_cmd.stdout != "1"
   with_items:
     - "{{ cmd_exist.results }}"
+  loop_control:
+    label: "Appying command : {{result_cmd.cmd_to_check}}"
+    loop_var: result_cmd
   notify: SaveConfig
 
 #- name: Debug

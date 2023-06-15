@@ -1,14 +1,14 @@
 ---
 
 - name: Checking if the config exist
-  become: true
+  become: false
   ansible.builtin.shell: |
     nv config show -o commands | grep '{{ nvue_command }}' | wc -l
   register: exist
   changed_when: false
 
 - name: Applying command
-  become: true
+  become: false
   ansible.builtin.shell: |
     {{ nvue_command }}
   when: exist.stdout != "1"
