@@ -5,7 +5,7 @@
 
   tasks:
     - name: Showing cLag Status
-      become: false
+      become: true
       ansible.builtin.shell: net show clag
       register: output
       changed_when: false

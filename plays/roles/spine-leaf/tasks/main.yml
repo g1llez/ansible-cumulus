@@ -71,7 +71,8 @@
 - name: Setting mLag
   ansible.builtin.include_tasks: set_mlag.yml
   when:
-    "'leaf' in group_names and (bonds is defined)"
+    "('leaf' in group_names or 'border' in group_names)
+    and (bonds is defined)"
 
 #
 #

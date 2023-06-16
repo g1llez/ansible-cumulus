@@ -1,7 +1,7 @@
 ---
 
 - name: Checking if the configs exist
-  become: true
+  become: "{{need_become}}"
   ansible.builtin.shell: |
     nv config show -o commands | grep '{{ cmd_to_check }}' | wc -l
   with_items: "{{ cmd }}"
@@ -13,7 +13,7 @@
   changed_when: false
 
 - name: Applying commands
-  become: true
+  become: "{{need_become}}"
   ansible.builtin.shell: "{{ result_cmd.cmd_to_check }}"
   when: result_cmd.stdout != "1"
   with_items:
@@ -22,9 +22,3 @@
     label: "Appying command : {{result_cmd.cmd_to_check}}"
     loop_var: result_cmd
   notify: SaveConfig
-
-#- name: Debug
-#  ansible.builtin.debug:
-#    msg: "Msg: {{ item.item }} "
-#  with_items:
-#    - "{{ cmd_exist.results }}"

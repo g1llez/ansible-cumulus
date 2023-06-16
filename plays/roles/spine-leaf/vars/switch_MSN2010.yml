@@ -4,7 +4,7 @@
 #
 
 # Ports speed
-# 8x  25 Gbps (swp1-18)
+# 18x  25 Gbps (swp1-18)
 # 4x 100 Gbps (swp19-22)
 
 #

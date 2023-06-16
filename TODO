@@ -1,5 +1,4 @@
 # Ajout de possiblité d'avoir un port access
-# Voir si on peut limiter le output sur les set_commands
 # Ajuster pour enlever les configs si possible d'avoir +
    ex. vLAN
        Loopback
@@ -7,6 +6,12 @@
 # Test swp_range pour Spine
 #   Enlever debug
 # Ajout SNMP
+# Voir pourquoi site_default marche pas
+# VM-SP01
+
+Done
+
+# Voir si on peut limiter le output sur les set_commands
 # MAC marche pas en haut de 10
 # S'assurer que les Border peuvent avoir un mLAG
 # Corriger command et commands pour être strict sur la commande :

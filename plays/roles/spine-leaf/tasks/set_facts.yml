@@ -3,6 +3,11 @@
 # Setting the facts for all equipments
 #
 
+- name: Setting global facts
+  set_fact:
+    need_become: false
+  when: "need_become is undefined"
+
 - name: Setting switchport list for the Spines to the Leafs
   set_fact:
     swp_list: "{{ swp_list | default([]) + [item | int]}}"
@@ -34,7 +39,7 @@
       "{{ groups['spine'] |
       ansible.utils.index_of('eq', inventory_hostname) + 1 }}"
   set_fact:
-    hostname: 'SP-{{ site }}{{ "%02d" | format(node_id | int) }}'
+    hostname: '{{ site }}-SP{{ "%02d" | format(node_id | int) }}'
     loopback: "{{ loopback_prefix }}.{{ site_id }}.{{ node_id }}"
     asn: '{{ asn_prefix }}{{ site_id }}01'
   when: "'spine' in group_names"
@@ -56,19 +61,21 @@
         uplinks is defined
   register: output
 
-- name: Setting switchport list for the Leafs mLag Bonds
+- name: Setting switchport list for the Leafs and Borders mLag Bonds
   set_fact:
     swp_list: "{{ swp_list | default([]) + [item | int]}}"
   with_items: "{{ bonds }}"
-  when: "'leaf' in group_names and bonds is defined"
+  when: ("'leaf' in group_names or 'border' in group_names")
+        and bonds is defined
   register: output
 
-- name: Setting switchport list for the Leafs peerlink
+- name: Setting switchport list for the Leafs and Borders peerlink
   set_fact:
     swp_list: "{{ swp_list | default([]) + [item | int]}}"
   with_sequence: start={{mlag_peerlink_swp_start}}
                  end={{mlag_peerlink_swp_start | int + 1}}
-  when: "'leaf' in group_names and bonds is defined"
+  when: ("'leaf' in group_names or 'border' in group_names")
+        and bonds is defined
   register: output
 
 - name: Simplifying switchport list
@@ -96,7 +103,7 @@
       "{{ groups['leaf'] |
       ansible.utils.index_of('eq', inventory_hostname) + 1 }}"
   set_fact:
-    hostname: 'LF-{{ site }}{{ "%02d" | format(node_id | int) }}'
+    hostname: '{{ site }}-LF{{ "%02d" | format(node_id | int) }}'
     loopback: "{{ loopback_prefix }}.{{ site_id }}.{{ (node_id | int) + 20 }}"
     asn:
       '{{ asn_prefix }}{{ site_id }}{{ "%02d" | format(node_id | int + 20) }}'
@@ -108,13 +115,13 @@
       "{{ groups['border'] |
       ansible.utils.index_of('eq', inventory_hostname) + 1 }}"
   set_fact:
-    hostname: 'BO-{{ site }}{{ "%02d" | format(node_id | int) }}'
+    hostname: '{{ site }}-BO{{ "%02d" | format(node_id | int) }}'
     loopback: "{{ loopback_prefix }}.{{ site_id }}.{{ (node_id | int) + 50 }}"
     asn:
       '{{ asn_prefix }}{{ site_id }}{{ "%02d" | format(node_id | int + 50) }}'
   when: "'border' in group_names"
 
-- name: Setting facts for mLag
+- name: Setting facts for mLag of the Leafs
   vars:
     node_id:
       "{{ groups['leaf'] |
@@ -126,10 +133,30 @@
       "{{ (node_id | int-1) if (node_id | int is divisibleby 2) else node_id }}"
   set_fact:
     mlag_mac: '{{ mlag_mac_prefix }}:{{ "%02d" | format(site_id) }}:{{ "%02d" |
-      format(mlag_shared_id | int) }}'
+      format( ( mlag_shared_id | int) + 20 ) }}'
     mlag_ip_backup:
       '{{ loopback_prefix }}.{{ site_id }}.{{ (mlag_pair_id | int) + 20 }}'
     mlag_shared_ip:
       '{{ mlag_prefix }}.{{ site_id }}.{{ (mlag_shared_id | int) + 20 }}'
   when:
     "'leaf' in group_names and (bonds is defined)"
+
+- name: Setting facts for mLag of the Borders
+  vars:
+    node_id:
+      "{{ groups['border'] |
+      ansible.utils.index_of('eq', inventory_hostname) + 1 }}"
+    mlag_pair_id:
+      "{{ (node_id | int-1) if
+              (node_id | int is divisibleby 2) else (node_id | int+1) }}"
+    mlag_shared_id:
+      "{{ (node_id | int-1) if (node_id | int is divisibleby 2) else node_id }}"
+  set_fact:
+    mlag_mac: '{{ mlag_mac_prefix }}:{{ "%02d" | format(site_id) }}:{{ "%02d" |
+      format( ( mlag_shared_id | int) + 50 ) }}'
+    mlag_ip_backup:
+      '{{ loopback_prefix }}.{{ site_id }}.{{ (mlag_pair_id | int) + 50 }}'
+    mlag_shared_ip:
+      '{{ mlag_prefix }}.{{ site_id }}.{{ (mlag_shared_id | int) + 50 }}'
+  when:
+    "'border' in group_names and (bonds is defined)"
